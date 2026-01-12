@@ -30,3 +30,24 @@ secure-upload-project/
 ├── server.js           # Main application logic & Security checks
 ├── package.json        # Dependencies
 └── README.md           # Project Documentation
+```
+
+## ▶️ Run locally
+
+1) Install dependencies:
+
+```bash
+npm install
+```
+
+2) Start the server:
+
+```bash
+npm start
+# then open http://localhost:3000 in your browser
+```
+
+Notes:
+
+- The app listens on port `3000` by default (see `server.js`).
+- If you'd like to add environment configuration later, consider creating a `.env.example` to document required variables without committing secrets.
