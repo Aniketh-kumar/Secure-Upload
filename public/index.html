@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVault Upload</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS STYLING --- */
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-gradient);
+            color: #333;
+        }
+
+        .upload-card {
+            background: var(--glass-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 { margin-top: 0; color: #1f2937; }
+        p { color: #6b7280; font-size: 0.9rem; }
+
+        /* The Drop Zone Area */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #f8fafc;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: #e0e7ff;
+            color: var(--primary);
+        }
+
+        .drop-zone-text {
+            pointer-events: none; /* Let clicks pass through text to the input */
+        }
+
+        .icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+
+        /* Hide the actual ugly file input */
+        #fileInput {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+
+        /* Status Messages */
+        #status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+
+        /* Selected file name display */
+        .file-info {
+            display: none;
+            margin-top: 10px;
+            background: #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="upload-card">
+        <h2>SecureVault Upload</h2>
+        <p>Sanitized & Verified Storage</p>
+
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            
+            <div class="drop-zone" id="dropZone">
+                <span class="icon">☁️</span>
+                <div class="drop-zone-text">
+                    <strong>Click or Drag file here</strong><br>
+                    <small>Supports: JPG, PNG, PDF, GIF, ZIP</small>
+                </div>
+                <input type="file" name="myFile" id="fileInput" required>
+            </div>
+
+            <div id="fileInfo" class="file-info">No file selected</div>
+
+            <button type="submit" class="btn">Upload Securely</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT FOR UI EFFECTS ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const form = document.getElementById('uploadForm');
+        const status = document.getElementById('status');
+
+        // 1. Drag & Drop Visual Effects
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        ['dragleave', 'drop'].forEach(event => {
+            dropZone.addEventListener(event, () => dropZone.classList.remove('dragover'));
+        });
+
+        // 2. Show File Name when selected
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileInfo.textContent = "📄 " + fileInput.files[0].name;
+                fileInfo.style.display = 'inline-block';
+            }
+        });
+
+        // 3. Handle Submit with AJAX (so page doesn't reload)
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop normal reload
+            status.textContent = "Scanning file...";
+            status.className = "";
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.text();
+
+                if (response.ok) {
+                    status.textContent = "✅ Success! " + result;
+                    status.className = "success";
+                } else {
+                    status.textContent = "❌ " + result;
+                    status.className = "error";
+                }
+            } catch (err) {
+                status.textContent = "❌ Network Error";
+                status.className = "error";
+            }
+        });
+    </script>
+
+</body>
+</html>
